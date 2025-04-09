@@ -1,4 +1,4 @@
-module github.com/smallnest/slog-clickhouse
+module github.com/Adamhingoro/slog-clickhouse
 
 go 1.21.0
 
