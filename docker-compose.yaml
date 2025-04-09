@@ -1,0 +1,34 @@
+version: "3.8"
+
+services:
+  clickhouse:
+    image: clickhouse/clickhouse-server:23.9.1.1854-alpine
+    container_name: clickhouse
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+    ports:
+      - "8123:8123"   # HTTP interface
+      - "9001:9000"   # Native TCP protocol
+    volumes:
+      #- clickhouse_data:/var/lib/clickhouse
+      - ./clickhouse-init:/docker-entrypoint-initdb.d/
+
+    restart: unless-stopped
+
+  telescope:
+    image: ghcr.io/iamtelescope/telescope:latest
+    environment:
+      - TELESCOPE_CONFIG_FILE=/config.yaml
+    volumes:
+      - ./.telescope/config.yaml:/config.yaml
+      - ./.telescope/db.sqlite3:/db.sqlite3
+    ports:
+      - "9898:9898"   # HTTP interface
+    depends_on:
+      - clickhouse
+    restart: unless-stopped
+
+volumes:
+  clickhouse_data:

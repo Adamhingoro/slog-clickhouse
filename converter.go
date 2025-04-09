@@ -50,7 +50,9 @@ func DefaultConverter(addSource bool, replaceAttr func(groups []string, a slog.A
 		}
 	}
 
-	payload[ContextKey] = extra
+	for k, v := range extra {
+		payload[k] = v
+	}
 
 	return payload
 }

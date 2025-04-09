@@ -12,9 +12,9 @@ import (
 
 func TestClickHouseHandler(t *testing.T) {
 	conn := clickhouse.OpenDB(&clickhouse.Options{
-		Addr: []string{"localhost:9000"},
+		Addr: []string{"localhost:9001"},
 		Auth: clickhouse.Auth{
-			Database: "myapp",
+			Database: "logging",
 			Username: "",
 			Password: "",
 		},
@@ -36,7 +36,13 @@ func TestClickHouseHandler(t *testing.T) {
 	conn.SetMaxOpenConns(10)
 	conn.SetConnMaxLifetime(time.Hour)
 
-	chHandler := Option{Level: slog.LevelWarn, DB: conn, LogTable: "myapp.logs"}.NewClickHouseHandler()
+	chHandler := Option{
+		Level:     slog.LevelWarn,
+		DB:        conn,
+		LogTable:  "logging.logs",
+		Namespace: "Dummy-Namespace",
+		Service:   "logging",
+	}.NewClickHouseHandler()
 
 	handler := slogmulti.Fanout(
 		chHandler, // pass to first handler: save warn and error logs to clickhouse
@@ -46,4 +52,8 @@ func TestClickHouseHandler(t *testing.T) {
 	logger := slog.New(handler)
 
 	logger.Error("Hello, ClickHouse!", "key1", "value1", "key2", 2)
+	logger.Error("sample request id", "uid", 123456, "request_id", "ABC123")
+	logger.Error("sample request id", "uid", 123456, "request_id", "ABC100", "some_key", "somevalue")
+	logger.Error("sample request id", "uid", 123456, "request_id", "ABC100", "some_int", 1234)
+
 }
